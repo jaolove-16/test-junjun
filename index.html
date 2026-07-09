@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jaolove.Studio16 Payment</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pattaya&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background-color: #FFF7D8; 
+            background-image: repeating-linear-gradient(45deg, #FFF7D8, #FFF7D8 10px, #FFF7E5 10px, #FFF7E5 20px);
+        }
+        .font-pattaya {
+            font-family: 'Pattaya', sans-serif;
+        }
+        .bounce-hover:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* ลูกเล่นกระดาษฉีก มุมบนซ้าย (Gingham Pattern) */
+        .torn-paper-tl {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 180px;
+            height: 180px;
+            z-index: 1;
+            background-color: #E5E8A2;
+            /* Gingham Pattern เขียวอ่อน */
+            background-image: linear-gradient(90deg, rgba(245,247,210,0.5) 50%, transparent 50%),
+                              linear-gradient(rgba(245,247,210,0.5) 50%, transparent 50%);
+            background-size: 20px 20px;
+            /* ขอบหยักเสมือนโดนฉีกจริง */
+            filter: drop-shadow(2px 2px 4px rgba(94,125,120,0.15));
+            clip-path: polygon(0 0, 100% 0, 85% 12%, 88% 25%, 72% 35%, 76% 50%, 55% 62%, 58% 78%, 32% 85%, 28% 100%, 0 100%);
+        }
+        
+        /* ลูกเล่นกระดาษฉีก มุมขวาล่าง (Polkadot Pattern) */
+        .torn-paper-br {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 180px;
+            height: 180px;
+            z-index: 1;
+            background-color: #FDD6E1;
+            /* Polkadot Pattern สีขาว */
+            background-image: radial-gradient(#ffffff 20%, transparent 20%);
+            background-size: 14px 14px;
+            background-position: 0 0;
+            /* ขอบหยักเสมือนโดนฉีกจริง */
+            filter: drop-shadow(-2px -2px 4px rgba(94,125,120,0.15));
+            clip-path: polygon(100% 100%, 0 100%, 15% 88%, 12% 75%, 28% 65%, 24% 50%, 45% 38%, 42% 22%, 68% 15%, 72% 0, 100% 0);
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        jumiBg: '#FFF7D8',
+                        jumiLine: '#FDD6E1',
+                        jumiKbankBtn: '#E5E8A2',
+                        jumiWalletBtn: '#FDD6E1',
+                        jumiText: '#5E7D78'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen flex flex-col items-center py-10 px-4 text-jumiText relative overflow-x-hidden">
+
+    <!-- เอฟเฟกต์กระดาษฉีกทั้ง 2 มุมพื้นหลัง -->
+    <div class="torn-paper-tl"></div>
+    <div class="torn-paper-br"></div>
+
+    <!-- Toast Notification (Popup เวลาคัดลอก) -->
+    <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-jumiText text-white px-6 py-3 rounded-full shadow-md transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none z-50 flex items-center gap-2 font-medium text-sm border border-jumiLine">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        คัดลอกสำเร็จ 🍥
+    </div>
+
+    <!-- Header: How to Pay & 메켈 ♡⁠ jun jun -->
+    <div class="relative z-10 mb-6 flex flex-col items-center justify-center gap-1 mt-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-pattaya tracking-wide mb-1" style="color: #E17190;">
+            How to Pay
+        </h1>
+        <p class="text-lg font-bold tracking-wider opacity-90 text-jumiText">메켈 ♡⁠ jun jun 🍥</p>
+    </div>
+
+    <!-- Container หลัก -->
+    <div class="max-w-md w-full relative z-10">
+        
+        <!-- ของตกแต่งรอบๆ Container -->
+        <span class="absolute -top-6 -left-2 text-xl animate-pulse select-none">🌸</span>
+        <span class="absolute top-1/4 -right-4 text-lg animate-bounce select-none">🍀</span>
+        <span class="absolute top-1/2 -left-6 text-lg animate-pulse select-none">🍥</span>
+        <span class="absolute bottom-20 -right-2 text-xl select-none">🌸</span>
+        <span class="absolute -bottom-4 left-6 text-xl animate-pulse select-none">🍀</span>
+
+        <!-- Card 1: รูปภาพ + ปุ่มบันทึก -->
+        <div class="bg-white p-2 rounded-[24px] border-2 border-jumiLine shadow-sm relative z-10 mb-6">
+            
+            <!-- ไอคอนตกแต่ง มุมซ้ายบน -->
+            <div class="absolute -top-3 -left-3 z-20 text-2xl select-none">
+                🌸
+            </div>
+            
+            <!-- ไอคอนตกแต่ง มุมขวาล่าง -->
+            <div class="absolute -bottom-3 -right-3 z-20 text-2xl select-none">
+                🍀
+            </div>
+
+            <!-- ใส่รูปภาพสำหรับแสกนชำระเงิน -->
+            <img id="payment-img" src="ไม่มีชื่อ 2710_20260709232315.jpg" alt="บัญชี jaolove.Studio16" class="w-full h-auto object-cover rounded-[16px]" onerror="this.src='https://placehold.co/600x600/FFF7D8/5E7D78?text=jaolove.Studio16+Payment'">
+            
+            <!-- ปุ่มบันทึกไฟล์รูปภาพ -->
+            <div class="px-2 pt-3 pb-1 flex justify-center">
+                <button onclick="downloadImage()" class="bounce-hover w-full bg-jumiBg hover:opacity-90 text-jumiText text-[13px] font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-jumiLine shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    บันทึกรูปภาพสแกนชำระเงิน 🌸
+                </button>
+            </div>
+        </div>
+                <!-- Card 2: ข้อความและปุ่มคัดลอก -->
+        <div class="bg-white px-6 pb-8 pt-8 rounded-[24px] border-2 border-jumiLine shadow-sm relative z-10">
+            
+            <!-- ไอคอนตกแต่งบนการ์ด 2 -->
+            <span class="absolute -top-3 right-8 text-xl drop-shadow-sm animate-pulse select-none">🍥</span>
+            <span class="absolute top-20 -left-3 text-lg drop-shadow-sm select-none">🌸</span>
+
+            <div class="space-y-6 relative z-10">
+                <!-- ข้อความทักทาย / คำอธิบาย -->
+                <div class="text-center space-y-4">
+                    <p class="text-[15px] leading-relaxed font-medium text-jumiText">
+                        ชื่อบัญชี <span class="font-bold border-b-2 border-jumiLine pb-0.5">กนกพร</span> น้าค้าบ 🌸
+                    </p>
+                    
+                    <!-- เทมเพลตโน๊ตสลิปและปุ่มคัดลอก -->
+                    <div class="bg-jumiBg/20 rounded-[16px] p-3 border border-jumiLine/60 text-left space-y-2">
+                        <div class="text-[11px] font-bold text-jumiText opacity-80 flex items-center gap-1">
+                            <span>🍥</span> กดคัดลอกโน๊ตสลิปตรงนี้
+                        </div>
+                        <div class="bg-white px-3 py-2 rounded-xl text-[13px] font-semibold border border-jumiLine/40 text-center text-jumiText select-all">
+                            ꒰⁠ ซื้อ-ขายกับ FB: 메켈 จุนจุน♡⁠˖ᵕ ⑅ ꒱⁠
+                        </div>
+                        <button onclick="copyText('꒰⁠ ซื้อ-ขายกับ FB: 메켈 จุนจุน♡⁠˖ᵕ ⑅ ꒱⁠', this)" class="bounce-hover w-full bg-jumiKbankBtn text-jumiText text-[12px] font-bold py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1 border border-jumiText/10 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            คัดลอกข้อความโน๊ตสลิป 🍀
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ส่วนเลขบัญชี -->
+                <div class="space-y-4 pt-2 border-t border-dashed border-jumiLine">
+                    <div class="flex items-center justify-center gap-1 text-[13px] opacity-85 mt-4 mb-2 font-medium">
+                        <span>🍥</span>
+                        จิ้มปุ่มเพื่อคัดลอกเลขบัญชีได้เลยค้าบ
+                        <span>🍥</span>
+                    </div>
+
+                    <!-- ธนาคารกสิกรไทย -->
+                    <div class="bg-white rounded-[16px] p-3 flex items-center justify-between border border-jumiLine shadow-sm transition-all hover:scale-[1.01] relative">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-jumiBg rounded-full flex items-center justify-center text-jumiText font-bold text-sm border border-jumiLine select-none">
+                                KBANK
+                            </div>
+                            <div>
+                                <div class="text-[11px] opacity-80 font-medium mb-0.5">กสิกรไทย (กนกพร)</div>
+                                <div class="font-bold tracking-wider text-jumiText text-base">203-1-70315-0</div>
+                            </div>
+                        </div>
+                        <button onclick="copyText('203-1-70315-0', this)" class="bounce-hover bg-jumiKbankBtn hover:opacity-90 text-jumiText text-[12px] font-bold px-4 py-2 rounded-full transition-all flex items-center gap-1 border border-jumiText/20 whitespace-nowrap flex-shrink-0 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            คัดลอก
+                        </button>
+                    </div>
+
+                    <!-- TrueMoney Wallet -->
+                    <div class="bg-white rounded-[16px] p-3 flex items-center justify-between border border-jumiLine shadow-sm transition-all hover:scale-[1.01] relative">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-jumiBg rounded-full flex items-center justify-center text-jumiText font-bold text-sm border border-jumiLine select-none">
+                                WALLET
+                            </div>
+                            <div>
+                                <div class="text-[11px] opacity-80 font-medium mb-0.5">ทรูวอเลท (กนกพร)</div>
+                                <div class="font-bold tracking-wider text-jumiText text-base">095-031-7402</div>
+                            </div>
+                        </div>
+                        <button onclick="copyText('095-031-7402', this)" class="bounce-hover bg-jumiWalletBtn hover:opacity-90 text-jumiText text-[12px] font-bold px-4 py-2 rounded-full transition-all flex items-center gap-1 border border-jumiText/20 whitespace-nowrap flex-shrink-0 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            คัดลอก
+                        </button>
+                    </div>
+                    
+                    <div class="text-center text-[11px] opacity-90 font-medium pt-1">
+                        ✨ ชำระทางทรูวอเลท ไม่มีบวกเพิ่มทุกกรณีค้าบ ✨
+                    </div>
+                </div>
+
+                <!-- Footer Note -->
+                <div class="mt-4 pt-4 text-center flex items-center justify-center gap-1 text-[12px] font-medium opacity-90 border-t border-dashed border-jumiLine">
+                    Thanks for your support kub~ 🍥🌸
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyText(text, buttonElement) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast();
+
+                const originalHtml = buttonElement.innerHTML;
+                const originalClass = buttonElement.className;
+                
+                buttonElement.innerHTML = '✔ คัดลอกแล้ว';
+                buttonElement.classList.add('opacity-70', 'scale-95');
+                
+                setTimeout(() => {
+                    buttonElement.innerHTML = originalHtml;
+                    buttonElement.className = originalClass;
+                }, 2000);
+
+            } catch (err) {
+                console.error('ไม่สามารถคัดลอกได้:', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function downloadImage() {
+            const img = document.getElementById('payment-img');
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = 'Payment_QR_jaoloveStudio16.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0', '-translate-y-4');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', '-translate-y-4');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
